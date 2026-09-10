@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import produtosRouters from './routers/produtoRouters.js';
+import categoriasRouters from './routers/categoriasRouters.js';
 
 const app = express();
 app.use(cors());
@@ -11,6 +12,7 @@ app.get('/health', (req, res) => res.json({status: 'OK'}));
 
 // prefixo de toda rota ('/api/v1/stoskapi')
 app.use('/api/v1/stoskapi', produtosRouters);
+app.use('/api/v1/stoskapi', categoriasRouters);
 
 // trata requisições de rotas q n existem
 app.use((req, res) => {
