@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import produtosRouters from './routers/produtoRouters.js';
-import categoriasRouters from './routers/categoriasRouters.js';
+import categoriasRouters from './routers/categoriaRouters.js';
 
 const app = express();
 app.use(cors());

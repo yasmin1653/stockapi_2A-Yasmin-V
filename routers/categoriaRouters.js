@@ -1,6 +1,6 @@
 import express from 'express';
 import * as controller from '../controllers/categoriaControllers.js';
-import { validarCategoria } from '../middlewares/validarCategoria';
+import { validarCategoria } from '../middlewares/validarCategoria.js';
 
 const router = express.Router();
 
