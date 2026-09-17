@@ -1,34 +1,42 @@
-import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import produtosRouters from './routers/produtoRouters.js';
-import categoriasRouters from './routers/categoriaRouters.js';
+import 'dotenv/config';
+
+import pedidosRoutes from './routes/pedidosRoutes.js';
+import clientesRoutes from './routes/clientesRoutes.js';
+import itensPedidoRoutes from './routes/itensPedidoRoutes.js';
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-app.get('/health', (req, res) => res.json({status: 'OK'})); 
+app.use('/api', pedidosRoutes);
+app.use('/api', clientesRoutes);
+app.use('/api', itensPedidoRoutes);
 
-// prefixo de toda rota ('/api/v1/stoskapi')
-app.use('/api/v1/stoskapi', produtosRouters);
-app.use('/api/v1/stoskapi', categoriasRouters);
-
-// trata requisições de rotas q n existem
-app.use((req, res) => {
-    res.status(404).json({erro:`Rota &{req.method} &{req.originalUrl} não encontrada`})
+app.get('/', (req, res) => {
+  res.send('StockAPI no ar');
 });
 
-//mensagem generica || Trata erros
-app.use((erro, req,res, next) => {
-    console.error(erro);
+// 404
+app.use((req, res) => {
+  res.status(404).json({
+    erro: 'rota nao encontrada'
+  });
+});
 
-    if (erro.code =='ER_NO_REFERENCE_ROW_2') {
-        return res.status(400).json({erro: 'categoria_id informada não existe'})
-    }
+// Error handler
+app.use((erro, req, res, next) => {
+  console.error(erro);
 
-    res.status(500).json({erro: 'Erro interno do servidor'})
-})
+  res.status(500).json({
+    erro: 'erro interno'
+  });
+});
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Rodando na porta ${PORT}`));
+
+app.listen(PORT, () => {
+  console.log(`Rodando na porta ${PORT}`);
+});
