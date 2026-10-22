@@ -1,57 +1,61 @@
-import pool from'../confg/db.js';
+import pool from '../confg/db.js';
 
-const CAMPOS_PRODUTO = ['nome','descricao','preco','quantidade_estoque','categoria_id'];
+const CAMPOS_PRODUTO = ['nome', 'descricao', 'preco', 'quantidade_estoque', 'categorias_id']; // Ajustado para categorias_id conforme seu Workbench
 
-//função para criar um novo produto
+// Função para criar um novo produto
 export async function criar(produto) {
-    const{nome, descricao, preco, quantidade_estoque, categoria_id} = produto;  //desestruturação
-    const [r] = await pool.query('INSERT INTO produtos (nome, descricao, preco, quantidade_etoque, categoria_id)'+'VALUES(?,?,?)', //n expoe os dados em campo, evita ataque de sql em jek(sla)
-        [nome, descricao?? null, preco,quantidade_estoque?? 0, categoria_id ?? null]);
-        return r.insertId //retorna o id do produto q foi criado
+    const { nome, descricao, preco, quantidade_estoque, categorias_id } = produto;  
+    
+    // Corrigido: adicionado 's' em quantidade_estoque e ajustado para 5 interrogações (?,?,?,?,?)
+    const [r] = await pool.query(
+        'INSERT INTO produtos (nome, descricao, preco, quantidade_estoque, categorias_id) VALUES (?, ?, ?, ?, ?)', 
+        [nome, descricao ?? null, preco, quantidade_estoque ?? 0, categorias_id ?? null]
+    );
+    return r.insertId; // Retorna o id do produto que foi criado
 }
 
-//Função para listar todos os produtos
+// Função para listar todos os produtos
 export async function listar() {
-    const [rows] = pool.query( 
-        `SELECT produtos.id, produtos.nome, produtos.descricao, produtos.preco, produto.quantidade_estoque, categorias.nome AS categoria
+    // Corrigido: Adicionado o `await` e ajustado de `produto.` para `produtos.`
+    const [rows] = await pool.query( 
+        `SELECT produtos.id, produtos.nome, produtos.descricao, produtos.preco, produtos.quantidade_estoque, categorias.nome AS categoria
         FROM produtos
-        INNER JOIN categorias
-        ON produtos.categorias_id = categorias.id`);
+        INNER JOIN categorias ON produtos.categorias_id = categorias.id`
+    );
     return rows;
 }
 
-//função para buscar produto pelo ID
+// Função para buscar produto pelo ID
 export async function buscaPorId(id) {
+    // Corrigido: Adicionada a vírgula após produtos.descricao, ajustado produtos.quantidade_estoque e produtos.categorias_id
     const [rows] = await pool.query(
-        `SELECT produtos.id, produtos.nome, produtos.descricao produtos.preco, produto.quantidade_estoque, categorias.nome AS categoria
+        `SELECT produtos.id, produtos.nome, produtos.descricao, produtos.preco, produtos.quantidade_estoque, categorias.nome AS categoria
         FROM produtos
-        INNER JOIN categorias
-        ON produtos.categoria_id = categorias.id
-        WHERE produtos.id = ?`, [id]);
-    return rows[0]
+        INNER JOIN categorias ON produtos.categorias_id = categorias.id
+        WHERE produtos.id = ?`, [id]
+    );
+    return rows[0];
 }
 
-//Função para atualizar od dados de um produto
+// Função para atualizar os dados de um produto
 export async function atualizar(id, produto) {
-    // const{nome, descricao, preco, quantidade_estoque, categoria_id} = produto;
-    // const[r] = await pool.query('UPDATE produto SET nome=?, descricao=?, preco=?, quantidade_estoque=?, categoria_id=? WHERE id=?', [nome, descricao, preco, quantidade_estoque, categoria_id, id]);
-    // return r.affectedRows; //numero de linhas afetadas
+    // Corrigido: Alterado 'camposAtualizados' para 'produto' (que é o parâmetro da função)
+    const camposParaAtualizar = Object.keys(produto).filter((campo) => CAMPOS_PRODUTO.includes(campo));
 
-    const camposParaAtualizar = Object.keys(camposAtualizados).filter((campo)=> CAMPOS_PRODUTO.includes(campo))
+    if (camposParaAtualizar.length === 0) return 0; // Evita erro se nenhum campo válido for enviado
 
-    const setClause = camposParaAtualizar.map((campo)=> `${campo} = ?`).join(', '); //set treco recebe '?'
-
-    const valores = camposParaAtualizar.map((campo) => camposAtualizados[campo]);
+    const setClause = camposParaAtualizar.map((campo) => `${campo} = ?`).join(', '); 
+    const valores = camposParaAtualizar.map((campo) => produto[campo]);
 
     const [r] = await pool.query(
-        `UPDATE produtos set ${setClause} WHERE id = ?`, 
-        [...valores, id] // O ... espalha o conteúdo do array
-    )
+        `UPDATE produtos SET ${setClause} WHERE id = ?`, 
+        [...valores, id] 
+    );
 
     return r.affectedRows;
 }
 
-//Função para deletar um produto
+// Função para deletar um produto
 export async function deletar(id) {
     const [r] = await pool.query('DELETE FROM produtos WHERE id=?', [id]);
     return r.affectedRows;

@@ -5,7 +5,7 @@ import { validarProduto, validarAtualizacaoProduto } from '../middlewares/valida
 const router = express.Router();
 
 //prefixo define só uma vez. Ex "produto"
-router.post('/produtos', controller.criar);
+router.post('/produtos', validarProduto, controller.criar);
 router.get('/produtos', controller.listar)
 router.get('/produtos/:id', controller.buscarPorId);
 router.patch('/produtos/:id', validarAtualizacaoProduto, controller.atualizar);
